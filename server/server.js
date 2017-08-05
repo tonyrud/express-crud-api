@@ -1,4 +1,3 @@
-
 const env = require('./config/config').env
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -7,7 +6,7 @@ const _ = require('lodash')
 
 const { mongoose } = require('./db/mongoose')
 const { Todo } = require('./models/todo')
-const { User } = require('./models/user')
+const User = require('./models/user')
 
 let app = express()
 const port = process.env.PORT
@@ -103,10 +102,29 @@ app.patch('/todos/:id', (req, res) => {
       if (!todo) {
         return res.status(404).send()
       }
-      res.send({todo})
+      res.send({ todo })
     })
     .catch(err => {
       res.status(404).send()
+    })
+})
+
+app.post('/users', (req, res) => {
+  const body = _.pick(req.body, ['email', 'password'])
+  const user = new User(body)
+
+  user
+    .save()
+    .then(() => {
+      // generate user token from custom user schema method
+      return user.generateAuthToken()
+    })
+    .then(token => {
+      // set header to returned auth token, send user
+      res.header('x-auth', token).send(user)
+    })
+    .catch(error => {
+      res.status(400).send(e)
     })
 })
 
