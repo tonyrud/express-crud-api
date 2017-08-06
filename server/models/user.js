@@ -82,6 +82,30 @@ UserSchema.statics.findByToken = function(token) {
   })
 }
 
+UserSchema.statics.findByCredentials = function (email, password) {  
+  let User = this
+
+  // return user back to login route
+  return User.findOne({email}).then(user => {
+    if (!user) {
+      return Promise.reject()
+    }
+
+    // return new promise to use in users/login route
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, res) => {
+        // res will be true if passwords match
+        if (res) {
+          // return promise value
+          resolve(user)
+        } else {
+          reject()
+        }
+      })
+    })
+  })
+ }
+
 UserSchema.pre('save', function(next) {
   const user = this
 

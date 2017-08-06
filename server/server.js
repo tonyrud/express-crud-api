@@ -125,12 +125,31 @@ app.post('/users', (req, res) => {
       res.header('x-auth', token).send(user)
     })
     .catch(error => {
-      res.status(400).send(e)
+      res.status(400).send(error)
     })
 })
 
 app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user)
+})
+
+app.post('/users/login', (req, res) => {
+  const body = _.pick(req.body, ['email', 'password'])
+
+  User.findByCredentials(body.email, body.password).then(user => {
+    // if user returned, give them a new auth token
+    return user.generateAuthToken().then(token => {
+      // set header to returned auth token, send user
+      res.header('x-auth', token).send(user)
+    })
+    .catch(err => {
+      throw Error(err)
+    })
+
+  })
+  .catch(err => {
+    res.status(400).send(err)
+  })
 })
 
 app.listen(port, () => {
