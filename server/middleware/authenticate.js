@@ -17,4 +17,10 @@ const authenticate = (req, res, next) => {
     })
 }
 
-module.exports = {authenticate}
+const catchErrors = fn => {
+  return function(req, res, next) {
+    return fn(req, res, next).catch(next)
+  }
+}
+
+module.exports = {authenticate, catchErrors}
